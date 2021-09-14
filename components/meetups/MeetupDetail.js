@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 
-
 import classes from "./MeetupDetail.module.css";
 
 export default function MeetupDetail(props) {
@@ -8,7 +7,6 @@ export default function MeetupDetail(props) {
 
   const meetupId = router.query.meetupId;
 
-  console.log(meetupId);
   return (
     <section className={classes.detail}>
       <img src={props.image} alt={props.id} />
