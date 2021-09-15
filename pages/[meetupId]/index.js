@@ -1,49 +1,62 @@
+import { MongoClient, ObjectId } from "mongodb";
 import MeetupDetail from "../../components/meetups/MeetupDetail";
 
 export async function getStaticPaths() {
+  const client = await MongoClient.connect(
+    "mongodb+srv://nextjs:nextjs@cluster0.tlggv.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const result = await meetupsCollection.find({}, { _id: 1 }).toArray();
+
+  client.close();
   return {
     fallback: false,
-    paths: [
-      {
-        params: {
-          meetupId: "m1"
-        }
-      },
-      {
-        params: {
-          meetupId: "m2"
-        }
+    paths: result.map((meetup) => ({
+      params: {
+        meetupId: meetup._id.toString()
       }
-    ]
+    }))
   };
 }
 
 export async function getStaticProps(context) {
   const meetupId = context.params.meetupId;
-  console.log(meetupId);
 
+  const client = await MongoClient.connect(
+    "mongodb+srv://nextjs:nextjs@cluster0.tlggv.mongodb.net/meetups?retryWrites=true&w=majority"
+  );
+
+  const db = client.db();
+
+  const meetupsCollection = db.collection("meetups");
+
+  const result = await meetupsCollection.findOne({ _id: ObjectId(meetupId) });
+
+  client.close();
   return {
     props: {
       meetupData: {
-        id: "m1",
-        title: "The First Meetup",
-        image:
-          "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Science_World_at_TELUS_World_of_Science.jpg/1599px-Science_World_at_TELUS_World_of_Science.jpg",
-        address: "1455 Quebec St, Vancouver, BC V6A 3Z7",
-        description: "This is our first meetup"
+        id: result._id.toString(),
+        title: result.title,
+        image: result.image,
+        address: result.address,
+        description: result.description
       }
     }
   };
 }
 
-export default function MeetupDetails() {
+export default function MeetupDetails(props) {
   return (
     <MeetupDetail
-      id="m1"
-      title="The First Meetup"
-      image="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Science_World_at_TELUS_World_of_Science.jpg/1599px-Science_World_at_TELUS_World_of_Science.jpg"
-      address="1455 Quebec St`` Vancouver`` BC V6A 3Z7"
-      description="This is our first meetup"
+      title={props.meetupData.title}
+      image={props.meetupData.image}
+      address={props.meetupData.address}
+      description={props.meetupData.description}
     />
   );
 }
