@@ -1,5 +1,7 @@
+import Head from "next/head";
 import { MongoClient } from "mongodb";
 import MeetupList from "../components/meetups/MeetupList";
+import { Fragment } from "react";
 
 export async function getStaticProps() {
   const client = await MongoClient.connect(
@@ -11,7 +13,7 @@ export async function getStaticProps() {
   const meetupsCollection = db.collection("meetups");
 
   const result = await meetupsCollection.find().toArray();
-  
+
   client.close();
 
   return {
@@ -29,5 +31,16 @@ export async function getStaticProps() {
 }
 
 export default function HomePage(props) {
-  return <MeetupList meetups={props.meetups} />;
+  return (
+    <Fragment>
+      <Head>
+        <title>Nextjs Meetup</title>
+        <meta
+          name="description"
+          content="Browse a huge list of highly active React meetups!!"
+        />
+      </Head>
+      <MeetupList meetups={props.meetups} />
+    </Fragment>
+  );
 }
